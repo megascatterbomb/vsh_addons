@@ -1,7 +1,7 @@
 local maxHealth;
 local currentHealth;
 
-// Helper to erase listeners
+// Helper to erase listeners we want to replace.
 function EraseListener(event, order, indexToRemove)
 {
     local listenerToRemove = null;
@@ -41,6 +41,8 @@ function EraseListener(event, order, indexToRemove)
 }
 
 // Increase setup time for very high player counts.
+// Round start can be very laggy for high player counts; extra time helps the less fortunate.
+// Also gives players more time to spread out.
 AddListener("setup_start", 10, function ()
 {
     local setupTime = clampFloor(16, ceil(validMercs.len() / 3.0));
@@ -71,6 +73,7 @@ AddListener("round_end", 5, function (winnerTeam)
     BroadcastBestPlayers();
 });
 
+// Track current health for damage calculations.
 AddListener("tick_always", 5, function(timeDelta)
 {
     if(!IsRoundOver() && IsAnyBossAlive())
@@ -81,6 +84,7 @@ AddListener("tick_always", 5, function(timeDelta)
 });
 
 // Replacement for listener in /_gamemode/round_logic.nut
+// Removes vanilla logic for timer clamp.
 EraseListener("tick_always", 8, 0);
 AddListener("tick_always", 8, function(timeDelta)
 {
@@ -102,7 +106,7 @@ AddListener("tick_always", 8, function(timeDelta)
         return;
     }
 
-    // Removed as vsh_addons contains a replacement
+    // Removed as we have a replacement
     // if (GetAliveMercCount() <= 5 && GetPropFloat(team_round_timer, "m_flTimeRemaining") > 60)
     //    EntFireByHandle(team_round_timer, "SetTime", "60", 0, null, null);
 
@@ -124,6 +128,7 @@ function CalcStabDamage(victim)
 }
 
 // Clamp time for when hale kills mercs quickly.
+// Prevents a round dragging on with few players.
 function ClampRoundTime()
 {
     local maxTime = ceil(clampFloor(60, aliveMercs.len() * 10));
@@ -186,7 +191,7 @@ function BroadcastBestPlayers()
     ClientPrint(null, 3, "Total Damage: "+totalDamage+"/"+maxHealth+" ("+totalPercent+"%)");
 }
 
-// Ensure death message gets printed to Hale
+// Ensure death message gets printed to Hale when dead ringer is used.
 function OnGameEvent_player_death(params)
 {
     if (IsNotValidRound())
