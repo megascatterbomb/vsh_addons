@@ -1,6 +1,3 @@
-::maxHealth <- 0;
-::currentHealth <- 0;
-
 // Reduce health for higher player counts
 ::CalcBossMaxHealth <- function(mercCount)
 {

@@ -1,3 +1,6 @@
+::maxHealth <- 0;
+::currentHealth <- 0;
+
 // Helper to erase listeners we want to replace.
 function EraseListener(event, order, indexToRemove)
 {
@@ -25,6 +28,7 @@ function EraseListener(event, order, indexToRemove)
 IncludeScript("vsh_addons/health.nut");
 IncludeScript("vsh_addons/damage_scoring.nut");
 IncludeScript("vsh_addons/round_time.nut");
+IncludeScript("vsh_addons/control_point.nut");
 
 // Clamp stab damage (and market gardner) to 5000 max
 function CalcStabDamage(victim)
