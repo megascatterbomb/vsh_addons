@@ -1,4 +1,4 @@
-// Reduce health for higher player counts
+// OVERRIDE: Reduce health for higher player counts
 ::CalcBossMaxHealth <- function(mercCount)
 {
     if (mercCount < 2)

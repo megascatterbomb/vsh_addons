@@ -1,5 +1,5 @@
-local newMightySlamCooldown = 0.5;
-local newSaxtonPunchCooldown = 0.5;
+local newMightySlamCooldown = 1;
+local newSaxtonPunchCooldown = 1;
 local newSweepingChargeCooldown = 1;
 
 // Contains replacement functions for each of saxton's abilities.
@@ -47,7 +47,7 @@ function SaxtonPunchTrait::Perform(victim)
 {
     if (meter != 0)
         return false;
-    meter -= 30;
+    meter -= newSaxtonPunchCooldown;
 
     vsh_vscript.Hale_SetRedArm(boss, false);
 

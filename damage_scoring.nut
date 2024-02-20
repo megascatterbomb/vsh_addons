@@ -1,6 +1,6 @@
 // Broadcast player's damage in chat when they die.
 function BroadcastDamageOnDeath(attacker, victim, deadRinger = false) {
-    if(IsBoss(victim))
+    if(IsBoss(victim) || IsRoundOver())
     {
         return;
     }
@@ -65,7 +65,7 @@ AddListener("round_end", 5, function (winnerTeam)
     BroadcastBestPlayers();
 });
 
-// Ensure death message gets printed to Hale when dead ringer is used.
+// OVERRIDE: Ensure death message gets printed to Hale when dead ringer is used.
 function OnGameEvent_player_death(params)
 {
     if (IsNotValidRound())

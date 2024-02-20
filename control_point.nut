@@ -1,7 +1,10 @@
 ::mercBuff <- false
 ::haleBuff <- false
 
-// Replace stalemate function to account for a captured control point.
+local increment = 1;
+local superIncrement = false;
+
+// OVERRIDE: Replace stalemate function to account for a captured control point.
 function PrepareStalemate()
 {
     local boss = GetRandomBossPlayer();
@@ -28,6 +31,35 @@ function PrepareStalemate()
     RunWithDelay("EndRoundTime", null, delay);
 }
 
+// Continuously regens or damages hale.
+function EndgameInterval(killHale)
+{
+    local newHealth = killHale ? currentHealth - increment : currentHealth + increment;
+
+    if(IsRoundOver()) {
+        return;
+    }
+
+    if(newHealth <= 0) {
+        boss.SetHealth(0);
+        return;
+    } else if(newHealth >= maxHealth) {
+        boss.SetHealth(maxHealth);
+        EndRound(TF_TEAM_BOSS);
+        return;
+    }
+
+    boss.SetHealth(currentHealth);
+
+    increment++;
+    if(superIncrement) {
+        increment = ceil(increment * 1.05);
+    }
+
+    // Loop continuously at 1 second intervals.
+    RunWithDelay("EndgameInterval("+killHale+")", null, delay);
+}
+
 // Remove outputs intended to end the round on point capture and add our own.
 AddListener("setup_end", 0, function()
 {
@@ -47,23 +79,23 @@ AddListener("setup_end", 0, function()
     );
 
     // ...and in with the new.
-    // TODO fix this shit
     EntityOutputs.AddOutput(controlPoint,
         "OnCapTeam"+(TF_TEAM_MERCS-1),
         vsh_vscript_name,
         "RunScriptCode",
-        "BuffMercs",
+        "BuffMercs()",
         0, -1);
     EntityOutputs.AddOutput(controlPoint,
         "OnCapTeam"+(TF_TEAM_BOSS-1),
         vsh_vscript_name,
         "RunScriptCode",
-        "BuffHale",
+        "BuffHale()",
         0, -1);
 });
 
-// Used to calculate how much health that Hale regens/bleeds should initially increase by every second.
-function CalculateStartingIncrement(killHale) {
+// Starts the endgame bleed/health regen.
+// Calculates the appropriate starting increment to use.
+function BeginEndgame(killHale) {
     local sum = killHale ? currentHealth : maxHealth - currentHealth;
     local mercsKilled = startMercCount - GetAliveMercCount();
     local desiredTimeUnclamped = 5 * (killHale ? mercsKilled : GetAliveMercCount());
@@ -72,27 +104,31 @@ function CalculateStartingIncrement(killHale) {
 
     local startingIncrement = (2*sum/desiredTime - desiredTime + 1)/2.0;
 
-    return clamp(ceil(startingIncrement), 1, maxHealth / 100);
+    increment = clamp(ceil(startingIncrement), 1, maxHealth / 100);
+
+    EndgameInterval(killHale);
 }
 
-// Massively reduces Hale's cooldown on abilities.
+// Removes Hale's cooldown on abilities.
 // Hale's health regenerates an ever-increasing amount until it's max, at which point Hale wins.
 ::BuffHale <- function() {
-    printl("Hale has received buffs");
+    haleBuff = true;
+    EntFireByHandle(team_round_timer, "Pause", "", 0, null, null);
+    EntFireByHandle(team_round_timer, "Disable", "", 0, null, null);
+
     // Buff ability cooldown
     IncludeScript("vsh_addons/ability_cooldown_override.nut");
 
-    haleBuff = true;
+    // Super regen
 }
 
-function CalculateRespawnCount() {
-    local mercsKilled = startMercCount - GetAliveMercCount();
-}
-
-// Mercs get a 3s health buff, full crits on all weapons for the rest of the round, and some reinforcements.
-// All players who did above-average damage before dying are respawned.
+// Mercs get a 3s health buff and full crits on all weapons for the rest of the round.
 // Hale bleeds an ever-increasing amount until the round ends.
 ::BuffMercs <- function() {
+    mercBuff = true;
+    EntFireByHandle(team_round_timer, "Pause", "", 0, null, null);
+    EntFireByHandle(team_round_timer, "Disable", "", 0, null, null);
+
     // Give huge health buff
     local mercs = GetAliveMercs();
     for(local i = 0; i < mercs.len(); i++) {
@@ -109,10 +145,15 @@ function CalculateRespawnCount() {
         }
     });
 
-    mercBuff = true;
+    // Super bleed
 }
 
 // Stalemates if point isn't owned.
+// Increases rate of increment if owned.
 function EndRoundTime() {
-
+    if(mercBuff || haleBuff) {
+        superIncrement = true;
+        return;
+    }
+    EndRound(TF_TEAM_UNASSIGNED);
 }

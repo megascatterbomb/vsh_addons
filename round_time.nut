@@ -32,7 +32,7 @@ AddListener("setup_end", 0, function()
     ClampRoundTime();
 });
 
-// Replacement for listener in /_gamemode/round_logic.nut
+// OVERRIDE: Replacement for listener in /_gamemode/round_logic.nut
 // Removes vanilla logic for timer clamp.
 EraseListener("tick_always", 8, 0);
 AddListener("tick_always", 8, function(timeDelta)
