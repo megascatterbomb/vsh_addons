@@ -27,7 +27,7 @@ Changes:
     - New value: `max(16, n/3)` seconds.
   - Time before point unlocks:
     - Old value: 4 minutes (drops to 1 minute once only 5 players are alive).
-    - New behaviour: Starts at `max(60, n*8)` seconds. On player death, time remaining is clamped down to `max(60, n*10)` seconds.
+    - New behaviour: Starts at `max(240, n*8)` seconds, then clamped down to `max(60, n*10)` seconds during the round (updated on player death).
   - Sudden death time is unchanged.
 - Weapons:
   - Market Gardener and Backstab damage (and anything else using `CalcStabDamage()`) capped at 5000.
