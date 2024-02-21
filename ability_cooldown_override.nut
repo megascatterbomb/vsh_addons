@@ -1,5 +1,5 @@
 local newMightySlamCooldown = 1;
-local newSaxtonPunchCooldown = 1;
+local newSaxtonPunchCooldown = 0.5;
 local newSweepingChargeCooldown = 1;
 
 // Contains replacement functions for each of saxton's abilities.
