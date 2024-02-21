@@ -1,6 +1,6 @@
 This is a vscript addon for the Versus Saxton Hale gamemode in Team Fortress 2.
 
-To use this on your community server, simply place the file inside `/scripts/vscripts/vsh_addons`
+To use this on your community server, simply place all the .nut files inside `/scripts/vscripts/vsh_addons`. No sourcemod required!
 
 New Features:
 - Damage logging:
