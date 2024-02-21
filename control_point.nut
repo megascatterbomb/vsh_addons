@@ -144,7 +144,8 @@ function BeginEndgame(killHale) {
 // Hale's health regenerates an ever-increasing amount until it's max, at which point Hale wins.
 ::BuffHale <- function() {
     haleBuff = true;
-
+    ClientPrint(null, 3, "Hale's regenerating health, and his abilities have no cooldown!");
+    ClientPrint(null, 3, "If Hale's health replenishes entirely, he wins!");
     // Buff ability cooldown
     IncludeScript("vsh_addons/ability_cooldown_override.nut");
 
@@ -156,7 +157,7 @@ function BeginEndgame(killHale) {
 // Hale bleeds an ever-increasing amount until the round ends.
 ::BuffMercs <- function() {
     mercBuff = true;
-
+    ClientPrint(null, 3, "Hale is bleeding to death, and RED now has permanent crits!");
     // Give huge health buff
     local mercs = GetAliveMercs();
     for(local i = 0; i < mercs.len(); i++) {
