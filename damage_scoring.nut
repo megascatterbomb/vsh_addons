@@ -26,7 +26,7 @@ function BroadcastBestPlayers()
         }
     }
 
-    if(damageBoard.len() == 0 && IsAnyBossAlive())
+    if(damageBoard.len() == 0 && (IsAnyBossAlive() || IsRoundSetup()))
     {
         ClientPrint(null, 3, "None of you managed to scratch Hale this round. Pathetic!");
         return;
