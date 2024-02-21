@@ -1,35 +1,55 @@
 ::mercBuff <- false
 ::haleBuff <- false
 
-::healthHealed <- 0
+::healthHealed <- 0 // Track health regened by Hale.
 
 local increment = 1;
 
 // OVERRIDE: Replace stalemate function to account for a captured control point.
 function PrepareStalemate()
 {
-    local boss = GetRandomBossPlayer();
     local delay = clampFloor(60, API_GetFloat("stalemate_time"));
 
+    RunWithDelay("DisplayStalemateAlert()", null, delay - 60);
+
+    // Don't need to gate, entity is disabled when point captured.
+    RunWithDelay("EntFireByHandle(team_round_timer, `SetTime`, `60`, 0, null, null)", null, delay - 60);
+
+    RunWithDelay("PlayAnnouncerVODelayedGated(5)", null, delay - 6);
+    RunWithDelay("PlayAnnouncerVODelayedGated(4)", null, delay - 5);
+    RunWithDelay("PlayAnnouncerVODelayedGated(3)", null, delay - 4);
+    RunWithDelay("PlayAnnouncerVODelayedGated(2)", null, delay - 3);
+    RunWithDelay("PlayAnnouncerVODelayedGated(1)", null, delay - 2);
+
+    RunWithDelay("EndRoundTime()", null, delay);
+}
+
+// Helper functions to gate against mercBuff and haleBuff
+
+// Message displays for 5 seconds rather than 1
+function DisplayStalemateAlert() {
+    if(mercBuff || haleBuff) return;
     local text_tf = SpawnEntityFromTable("game_text_tf", {
         message = "#vsh_end_this",
         icon = "ico_notify_flag_moving_alt",
         background = 0,
         display_to_team = 0
     });
-    EntFireByHandle(text_tf, "Display", "", delay - 60, null, null);
-    // Display message for a bit longer
-    EntFireByHandle(text_tf, "Kill", "", delay - 55, null, null);
+    EntFireByHandle(text_tf, "Display", "", 0, null, null);
+    EntFireByHandle(text_tf, "Kill", "", 5, null, null);
+}
 
-    RunWithDelay("EntFireByHandle(team_round_timer, `SetTime`, `60`, 0, null, null)", null, delay - 60);
+// Play stalemate countdown.
+function PlayAnnouncerVODelayedGated(number) {
+    if(mercBuff || haleBuff) return;
+    local boss = GetRandomBossPlayer();
+    PlayAnnouncerVODelayed(boss, "count"+number, 0);
+}
 
-    PlayAnnouncerVODelayed(boss, "count5", delay - 6);
-    PlayAnnouncerVODelayed(boss, "count4", delay - 5);
-    PlayAnnouncerVODelayed(boss, "count3", delay - 4);
-    PlayAnnouncerVODelayed(boss, "count2", delay - 3);
-    PlayAnnouncerVODelayed(boss, "count1", delay - 2);
-
-    RunWithDelay("EndRoundTime", null, delay);
+// Stalemates if point isn't owned.
+function EndRoundTime() {
+    if(mercBuff || haleBuff) return;
+    EndRound(TF_TEAM_UNASSIGNED);
 }
 
 // Remove outputs intended to end the round on point capture and add our own.
@@ -73,18 +93,21 @@ function EndgameInterval(killHale)
     }
 
     local boss = GetBossPlayers()[0];
-    local newHealth = ceil(killHale ? currentHealth - increment : currentHealth + increment);
+    local oldHealth = boss.GetHealth();
+    local newHealth = ceil(killHale ? oldHealth - increment : oldHealth + increment);
 
     if(killHale) {
         // Adds hud-icon but not damage.
         boss.AddCondEx(TF_COND_GRAPPLINGHOOK_BLEEDING, 1, boss);
         boss.TakeDamageCustom(boss, boss, null, Vector(1, 1, 1), Vector(0, 0, 0), increment, 0, TF_DMG_CUSTOM_BLEEDING);
     } else if(!killHale && newHealth >= maxHealth) {
-        healthHealed += clampCeiling(maxHealth - currentHealth, newHealth - currentHealth);
+        healthHealed = healthHealed + maxHealth - oldHealth;
         boss.SetHealth(maxHealth);
+        currentHealth = maxHealth;
         EndRound(TF_TEAM_BOSS);
         return;
     } else {
+        healthHealed = healthHealed + newHealth - oldHealth;
         boss.SetHealth(newHealth);
     }
 
@@ -155,12 +178,3 @@ characterTraitsClasses.push(class extends CharacterTrait
         }
     }
 });
-
-
-// Stalemates if point isn't owned.
-function EndRoundTime() {
-    if(mercBuff || haleBuff) {
-        return;
-    }
-    EndRound(TF_TEAM_UNASSIGNED);
-}
