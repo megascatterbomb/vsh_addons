@@ -37,7 +37,7 @@ Changes:
     - Affects very high playercounts only.
 - Control Point:
   - Capturing the point no longer instantly ends the round:
-    - If RED caps, they get guaranteed crits on all weapons.
+    - If RED caps, they get guaranteed crits on all weapons and a powerful 5 second health regen.
     - If Hale caps, the cooldown on his special abilities is removed.
   - On capture, the stalemate timer is disabled entirely and the point locks itself permanently.
   - The round will eventually end due to Hale's health changing over time:
