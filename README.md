@@ -22,7 +22,7 @@ Changes:
 - Hale's health:
   - Added an additional factor that reduces Hale's health for >32 players.
   - Old formula (for $N \gt 32$): $H = 40N^2 + 2000$
-  - New Formula (for $N \gt 32$): $H = 40N^2 * (N-32)/200 + 2000$
+  - New Formula (for $N \gt 32$): $H = 40N^2 * (1 - (N-32)/200) + 2000$
   - Max health for $N \leq 32$ are unchanged.
 - Round timer:
   - Setup Time:
