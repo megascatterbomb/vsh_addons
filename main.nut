@@ -1,5 +1,5 @@
-::maxHealth <- 0;
-::currentHealth <- 0;
+::maxHealth <- 100000; // Don't initialize to zero or else you get random divide by zeroes.
+::currentHealth <- 100000;
 
 // Helper to erase listeners we want to replace.
 function EraseListener(event, order, indexToRemove)
