@@ -17,7 +17,6 @@ Changes:
 - Legend:
   - $n$ is the number of RED players still alive.
   - $N$ is the number of RED players at the start of the round.
-  - $h$ is the current health of Hale.
   - $H$ is the max health of Hale.
 - Hale's health:
   - Added an additional factor that reduces Hale's health for >32 players.
@@ -43,12 +42,9 @@ Changes:
   - The round will eventually end due to Hale's health changing over time:
     - When RED caps, Hale's health will tick down faster and faster. This guarantees his death if he doesn't manage to kill all of RED team first.
     - When Hale caps, his health will tick up faster and faster until it reaches max health, at which point Hale wins the round.
-  - The health gained/lost each second starts at a value $c$, then increases by 1 every second.
-  - $c$ is defined by the following equations, calculated on point capture:
-    - $\Delta h = H - h$ if Hale capped, $h$ if RED capped.
-    - $p = n$ if Hale capped, $N-n$ if RED capped.
-    - $t = max(60, 5p)$ The result of this equation is equivalent to the remaining round duration in seconds assuming no other damage events post-capture and no clamping in the next equation.
-    - $c = \lceil(2\Delta h/t - t + 1) / 2\rceil$ clamped between $1$ and $N/100$
-  - $c$ is calculated in this manner to ensure a roughly consistent round duration.
+  - The health gained/lost each second starts at 1, then increases by 1 every second.
+  - If RED has the point and Hale doesn't do any damage to RED for 30 seconds, an additional 1.05 multiplier is added onto the health drain *each second*.
+    - For example This means a $1.05^{15} = 2.08$ multiplier to the health drain per tick after 45 seconds of not dealing damage. The multiplier resets to 1.0 once Hale deals damage.
+    - The reverse is also true if Hale owns the point and the mercs don't deal damage to Hale for 30 seconds; Hale's health will regenerate faster via a similar multiplier.
   - These changes prevent either side from getting an undeserved victory, as the opponent still has a *slim* chance of winning after the capture.
   - Capturing the point produces exciting gameplay to finish a round as opposed to a sudden cutoff.
