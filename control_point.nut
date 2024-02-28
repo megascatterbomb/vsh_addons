@@ -4,6 +4,11 @@
 ::healthHealed <- 0 // Track health regened by Hale.
 
 local increment = 1;
+local idleMultiplier = 1;
+
+local haleLastDamage = Time();
+local mercsLastDamage = Time();
+local idleTime = 30;
 
 // OVERRIDE: Replace stalemate function to account for a captured control point.
 function PrepareStalemate()
@@ -101,11 +106,17 @@ function EndgameInterval(killHale)
 
     local boss = GetBossPlayers()[0];
     local oldHealth = boss.GetHealth();
-    local newHealth = ceil(killHale ? oldHealth - increment : oldHealth + increment);
+    local damageOrHealing = ceil(increment * idleMultiplier);
+    local newHealth = ceil(killHale ? oldHealth - damageOrHealing : oldHealth + damageOrHealing);
 
+    // ClientPrint(null, 3, "Increment: " + increment);
+    // ClientPrint(null, 3, "Idle multiplier: " + idleMultiplier);
+    // ClientPrint(null, 3, "Damage: " + damageOrHealing);
+
+    // Do the damage
     if(killHale) {
         local vecPunch = GetPropVector(boss, "m_Local.m_vecPunchAngle");
-        boss.TakeDamageCustom(boss, boss, null, Vector(0.000001, 0.000001, 0.000001), Vector(0.000001, 0.000001, 0.000001), increment, DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_BLEEDING);
+        boss.TakeDamageCustom(boss, boss, null, Vector(0.000001, 0.000001, 0.000001), Vector(0.000001, 0.000001, 0.000001), damageOrHealing, DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_BLEEDING);
         SetPropVector(boss, "m_Local.m_vecPunchAngle", vecPunch);
     } else if(!killHale && newHealth >= maxHealth) {
         healthHealed = healthHealed + maxHealth - oldHealth;
@@ -119,10 +130,34 @@ function EndgameInterval(killHale)
     }
 
     increment++;
+    // Speed things up if the losing team hasn't dealt damage in the past 30 seconds.
+    if(killHale && Time() > haleLastDamage + idleTime) {
+        if(idleMultiplier == 1) {
+            ClientPrint(null, 3, "Do some damage Saxton! Otherwise your health will drain even faster!");
+        }
+        idleMultiplier = idleMultiplier * 1.05;
+    } else if (!killHale && Time() > mercsLastDamage + idleTime){
+        if(idleMultiplier == 1) {
+            ClientPrint(null, 3, "Do some damage RED Team! Otherwise Hale will regenerate even faster!");
+        }
+        idleMultiplier = idleMultiplier * 1.05;
+    } else {
+        idleMultiplier = 1;
+    }
 
     // Loop continuously at 1 second intervals.
     RunWithDelay("EndgameInterval("+killHale+")", null, 1);
 }
+
+// Listen for idlers
+AddListener("damage_hook", 0, function (attacker, victim, params)
+{
+    if (IsBoss(attacker) && !IsBoss(victim)) {
+        haleLastDamage = Time();
+    } else if (!IsBoss(attacker) && IsBoss(victim)) {
+        mercsLastDamage = Time();
+    }
+});
 
 // Starts the endgame bleed/health regen.
 // Calculates the appropriate starting increment to use.
@@ -134,15 +169,15 @@ function BeginEndgame(killHale) {
     local controlPoint = Entities.FindByClassname(null, "team_control_point");
     EntFireByHandle(controlPoint, "SetLocked", "1", 0, null, null);
 
-    local sum = killHale ? currentHealth : maxHealth - currentHealth;
-    local mercsKilled = startMercCount - GetAliveMercCount();
-    local desiredTimeUnclamped = 5 * (killHale ? mercsKilled : GetAliveMercCount());
+    // local sum = killHale ? currentHealth : maxHealth - currentHealth;
+    // local mercsKilled = startMercCount - GetAliveMercCount();
+    // local desiredTimeUnclamped = 5 * (killHale ? mercsKilled : GetAliveMercCount());
 
-    local desiredTime = clampFloor(60, desiredTimeUnclamped);
+    // local desiredTime = clampFloor(60, desiredTimeUnclamped);
 
-    local startingIncrement = (2*sum/desiredTime - desiredTime + 1)/2.0;
+    // local startingIncrement = (2*sum/desiredTime - desiredTime + 1)/2.0;
 
-    increment = clamp(ceil(startingIncrement), 1, maxHealth / 100);
+    increment = 1; // clamp(ceil(startingIncrement), 1, maxHealth / 100);
 
     EndgameInterval(killHale);
 }
