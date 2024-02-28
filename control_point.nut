@@ -169,6 +169,9 @@ function BeginEndgame(killHale) {
     local controlPoint = Entities.FindByClassname(null, "team_control_point");
     EntFireByHandle(controlPoint, "SetLocked", "1", 0, null, null);
 
+    haleLastDamage = Time();
+    mercsLastDamage = Time();
+
     // local sum = killHale ? currentHealth : maxHealth - currentHealth;
     // local mercsKilled = startMercCount - GetAliveMercCount();
     // local desiredTimeUnclamped = 5 * (killHale ? mercsKilled : GetAliveMercCount());
