@@ -24,6 +24,13 @@ function PrepareStalemate()
     RunWithDelay("EndRoundTime()", null, delay);
 }
 
+// OVERRIDE: Prevent screenshake from the bleed damage dealt if RED caps
+function ScreenShakeTrait::OnDamageDealt(victim, params)
+{
+    if (victim != null && victim.IsValid() && !IsBoss(victim))
+        ScreenShake(victim.GetCenter(), 140, 1, 1, 10, 0, true);
+}
+
 // Helper functions to gate against mercBuff and haleBuff
 
 // Message displays for 5 seconds rather than 1
@@ -97,9 +104,9 @@ function EndgameInterval(killHale)
     local newHealth = ceil(killHale ? oldHealth - increment : oldHealth + increment);
 
     if(killHale) {
-        // Adds hud-icon but not damage.
-        boss.AddCondEx(TF_COND_GRAPPLINGHOOK_BLEEDING, 1, boss);
-        boss.TakeDamageCustom(boss, boss, null, Vector(1, 1, 1), Vector(0, 0, 0), increment, 0, TF_DMG_CUSTOM_BLEEDING);
+        local vecPunch = GetPropVector(boss, "m_Local.m_vecPunchAngle");
+        boss.TakeDamageCustom(boss, boss, null, Vector(0.000001, 0.000001, 0.000001), Vector(0.000001, 0.000001, 0.000001), increment, DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_BLEEDING);
+        SetPropVector(boss, "m_Local.m_vecPunchAngle", vecPunch);
     } else if(!killHale && newHealth >= maxHealth) {
         healthHealed = healthHealed + maxHealth - oldHealth;
         boss.SetHealth(maxHealth);
