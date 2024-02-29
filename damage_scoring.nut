@@ -36,9 +36,10 @@ function BroadcastBestPlayers()
     for(local i = 0; i < damageBoard.len(); i++) {
         local name = GetPropString(damageBoard[i][0], "m_szNetname");
         local damage = damageBoard[i][1];
+        local percent = floor(100 * damage / maxHealth);
         playerDamage += damage;
         if(i < topN && damage > 0) {
-            ClientPrint(null, 3, "#"+(i+1)+": "+name+" dealt "+damage+" damage.");
+            ClientPrint(null, 3, "#"+(i+1)+": "+name+" dealt "+damage+" damage ("+percent+"%)");
         }
     }
     local totalDamage = maxHealth - currentHealth + healthHealed;
