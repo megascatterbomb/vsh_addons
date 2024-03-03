@@ -42,8 +42,9 @@ function BroadcastBestPlayers()
             ClientPrint(null, 3, "#"+(i+1)+": "+name+" dealt "+damage+" damage ("+percent+"%)");
         }
     }
-    local totalDamage = maxHealth - currentHealth + healthHealed;
     local netDamage = maxHealth - currentHealth;
+    local totalDamage = netDamage + healthHealed;
+
     local playerPercent = floor(100 * playerDamage / maxHealth);
     if(!IsAnyBossAlive())
     {
@@ -76,7 +77,8 @@ AddListener("dead_ringer", 0, function(attacker, victim, params)
 
 AddListener("round_end", 5, function (winnerTeam)
 {
-    BroadcastBestPlayers();
+    // Slight delay as the game can take an extra tick to account for all damage stuff sometimes.
+    RunWithDelay("BroadcastBestPlayers()", null, 0.05);
 });
 
 // OVERRIDE: Ensure death message gets printed to Hale when dead ringer is used.
