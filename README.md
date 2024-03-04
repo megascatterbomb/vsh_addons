@@ -24,7 +24,7 @@ Changes:
   - New Formula (for $N \gt 32$): $H = 40N^2 * (1 - (N-32)/200) + 2000$
   - Max health for $N \leq 32$ are unchanged.
 - Brave Jump:
-  - Repetitive brave jumps are dampened. The strength factor starts at 0.5 and scales between 0.5 and 1 as the time since the last jump increases from 2.5 to 5 seconds.
+  - Added a 3 second cooldown. Has a supporting hud element.
 - Round timer:
   - Setup Time:
     - Old value: 16 seconds.
