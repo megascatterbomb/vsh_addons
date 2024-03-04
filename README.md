@@ -23,6 +23,8 @@ Changes:
   - Old formula (for $N \gt 32$): $H = 40N^2 + 2000$
   - New Formula (for $N \gt 32$): $H = 40N^2 * (1 - (N-32)/200) + 2000$
   - Max health for $N \leq 32$ are unchanged.
+- Brave Jump:
+  - Repetitive brave jumps are dampened. The strength factor scales between 0 and 1 as the time since the last jump increases from 0 to 5 seconds.
 - Round timer:
   - Setup Time:
     - Old value: 16 seconds.
