@@ -67,7 +67,7 @@ function BraveJumpTrait::Perform()
     newVelocity.x = forward.x * forwardmove + left.x * sidemove;
     newVelocity.y = forward.y * forwardmove + left.y * sidemove;
     newVelocity.Norm();
-    newVelocity *= 300;
+    newVelocity *= 300 * factor;
     newVelocity.z = jumpForce * factor;
 
     local currentVelocity = boss.GetAbsVelocity();
