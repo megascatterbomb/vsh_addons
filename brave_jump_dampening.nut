@@ -38,7 +38,7 @@ function BraveJumpTrait::Perform()
     local factor = 1;
     local dampDuration = 5;
     if(Time() < lastTimeJumped + dampDuration) {
-        factor = clampFloor(0, Time() - lastTimeJumped) / dampDuration;
+        factor = clampFloor(0.5, (Time() - lastTimeJumped) / dampDuration);
     }
 
     lastTimeJumped = Time();
