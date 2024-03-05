@@ -82,7 +82,7 @@ function BraveJumpTrait::Perform()
     cooldown_text_tf = SpawnEntityFromTable("game_text_tf", {
         message = "Brave Jump ready in "+jumpCooldown+"...",
         icon = "ico_notify_flag_moving_alt",
-        background = TF_TEAM_BOSS,
+        background = 0,
         display_to_team = TF_TEAM_BOSS
     });
 
@@ -93,6 +93,7 @@ function BraveJumpTrait::Perform()
         EntFireByHandle(cooldown_text_tf, "Display", "", i, boss, boss);
     }
     EntFireByHandle(cooldown_text_tf, "AddOutput", "message Brave Jump ready!", jumpCooldown - 0.1, boss, boss);
+    EntFireByHandle(cooldown_text_tf, "AddOutput", "background "+TF_TEAM_BOSS, jumpCooldown - 0.1, boss, boss);
     EntFireByHandle(cooldown_text_tf, "Display", "", jumpCooldown, player, player);
     EntFireByHandle(cooldown_text_tf, "Kill", "", jumpCooldown+0.1, player, player);
 }
