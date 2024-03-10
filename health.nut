@@ -1,13 +1,5 @@
-// OVERRIDE: Reduce health for higher player counts
-::CalcBossMaxHealth <- function(mercCount)
-{
-    local health = GetStartingMaxHealth(mercCount);
-    maxHealth = health;
-    return rounded;
-}
-
 // Separate function so we can get maxhealth without setting the maxHealth variable.
-function GetStartingHealth(mercCount)
+::GetStartingHealth <- function(mercCount)
 {
     if (mercCount < 2)
     {
@@ -18,6 +10,14 @@ function GetStartingHealth(mercCount)
     local unrounded = mercCount * mercCount * factor * API_GetFloat("health_factor") + (mercCount < 6 ? 1300 : 2000);
     local rounded = floor(unrounded / 100) * 100;
     return rounded;
+}
+
+// OVERRIDE: Reduce health for higher player counts
+::CalcBossMaxHealth <- function(mercCount)
+{
+    local health = GetStartingHealth(mercCount);
+    maxHealth = health;
+    return health;
 }
 
 // Track current health for damage calculations.
