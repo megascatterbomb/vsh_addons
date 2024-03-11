@@ -8,12 +8,12 @@ local movementFlags = IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
 
 function PrintIdleMessage(player, timeToKick)
 {
-    ClientPrint(target, 3, "You have "+timeToKick+" seconds to stop being AFK before you're fired!");
+    ClientPrint(player, 3, "You have "+timeToKick+" seconds to stop being AFK before you're fired!");
 }
 
 function PrintIdleMessageNearDeath(player, timeToKick)
 {
-    ClientPrint(target, 3, timeToKick+"...");
+    ClientPrint(player, 3, timeToKick+"...");
 }
 
 function CheckIfStillIdle(player)
@@ -40,20 +40,15 @@ function IdleTick()
         {
             continue;
         }
-        else if(mercsIdleTracker[player] == -1)
-        {
-            mercsIdleTracker.rawdelete(player);
-            continue;
-        }
         CheckIfStillIdle(player);
     }
 }
 
 function AdjustHaleHealth(bootCount)
 {
-    if(bootCount <= 0) return;
-
     local newMercCount = startMercCount - bootCount;
+
+    if(bootCount <= 0 || bootCount >= newMercCount) return;
 
     local effectiveMaxHealth = GetStartingHealth(newMercCount);
 
@@ -64,19 +59,35 @@ function AdjustHaleHealth(bootCount)
     if(healthPenalty <= 0) return;
 }
 
+function IdleStart()
+{
+    local now = Time();
+    foreach(player in GetAliveMercs())
+    {
+        if(IsPlayerAlive(player) && (!(player in mercsIdleTracker) || !(player in mercsInteractTracker)))
+        {
+            mercsIdleTracker[player] <- now;
+            mercsInteractTracker[player] <- 0;
+        }
+    }
+    IdleSecondLoop();
+    AddListener("tick_only_valid", 11, function (timeDelta)
+    {
+        IdleTick();
+    });
+}
+
 function IdleSecondLoop()
 {
-    local needed = false;
     local bootCount = 0;
-    foreach(player in mercsIdleTracker)
+    foreach(player in GetAliveMercs())
     {
         if(!IsPlayerAlive(player) || mercsInteractTracker[player] >= interactThreshold)
         {
-            mercsIdleTracker[player] = -1;
+            mercsIdleTracker[player] <- -1;
             mercsInteractTracker.rawdelete(player);
             continue;
         }
-        needed = true;
         local timeIdle = floor(Time() - mercsIdleTracker[player]);
         if(timeIdle >= idleThreshold && IsPlayerAlive(player))
         {
@@ -118,20 +129,12 @@ function IdleSecondLoop()
     }
     AdjustHaleHealth(bootCount);
 
-    if(!needed) return;
     RunWithDelay("IdleSecondLoop()", null, 1);
 }
 
 AddListener("setup_end", 10, function()
 {
-    foreach(player in GetAliveMercs())
-    {
-        mercsIdleTracker[player] = Time();
-        mercsInteractTracker[player] = 0;
-    }
-    AddListener("tick_only_valid", 2, function (timeDelta)
-    {
-        IdleTick();
-    });
-    IdleSecondLoop();
+    IdleStart();
 });
+
+
