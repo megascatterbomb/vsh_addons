@@ -18,9 +18,11 @@ AddListener("death", 0, function(attacker, victim, params)
 // Increase setup time for very high player counts.
 // Round start can be very laggy for high player counts; extra time helps the less fortunate.
 // Also gives players more time to spread out.
-AddListener("setup_start", 10, function ()
+// Negative ordering because this needs to run before the VO for setup is set in motion.
+AddListener("setup_start", -10, function ()
 {
     local setupTime = clampFloor(16, ceil(validMercs.len() / 3.0));
+    VSH_API_VALUES.setup_length <- setupTime;
     EntFireByHandle(team_round_timer, "SetTime", "" + setupTime, 0, null, null);
 });
 

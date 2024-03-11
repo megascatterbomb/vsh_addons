@@ -25,7 +25,7 @@ function CheckIfStillIdle(player)
     {
         return true;
     }
-    mercsIdleTracker[player] = Time();
+    mercsIdleTracker[player] <- Time();
     return false;
 }
 
@@ -43,6 +43,7 @@ function IdleTick()
 
 local adjustedMercCount = -1;
 
+// Reduce hale's health to compensate for the loss in players.
 function AdjustHaleHealth(bootedPlayers)
 {
     local bootCount = bootedPlayers.len();
@@ -75,15 +76,13 @@ function AdjustHaleHealth(bootedPlayers)
     ClientPrint(null, 3, "Hale was penalized " + healthPenalty + " health to compensate for idling.");
 }
 
+// Enable the AFK checker.
 function IdleStart()
 {
     local now = Time();
     foreach(player in GetAliveMercs())
     {
-        if(IsPlayerAlive(player) && !(player in mercsIdleTracker))
-        {
-            mercsIdleTracker[player] <- now;
-        }
+        mercsIdleTracker[player] <- now;
     }
     IdleSecondLoop();
     AddListener("tick_only_valid", 11, function (timeDelta)
@@ -92,20 +91,24 @@ function IdleStart()
     });
 }
 
+// Every second, look for idle players.
+// Send warning messages; kill if idleThreshold is reached.
 function IdleSecondLoop()
 {
     local bootedPlayers = [];
     foreach(player in GetAliveMercs())
     {
-        if (player == null || !IsPlayerAlive(player)) continue;
+        if (player == null || !IsPlayerAlive(player) || !(player in mercsIdleTracker)) continue;
 
         local timeIdle = floor(Time() - mercsIdleTracker[player]);
-        if(timeIdle >= idleThreshold && IsPlayerAlive(player))
+
+        if(timeIdle >= idleThreshold)
         {
+            bootedPlayers.push(player);
             player.TakeDamage(999999, 0, null);
+
             local name = GetPropString(player, "m_szNetname");
             ClientPrint(null, 3, "Player '" + name + "' was fired for being AFK.");
-            bootedPlayers.push(player);
             continue;
         }
         switch (timeIdle) {
@@ -145,7 +148,8 @@ function IdleSecondLoop()
 
 AddListener("setup_end", 10, function()
 {
-    IdleStart();
+    // Give the game plenty of time to sort its shit out before we start reading vars.
+    RunWithDelay("IdleStart()", null, 1);
 });
 
 
