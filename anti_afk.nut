@@ -69,7 +69,7 @@ function AdjustHaleHealth(booted)
     if(healthPenalty <= 0) return;
 
     boss.TakeDamageCustom(boss, boss, null, Vector(0.000001, 0.000001, 0.000001), Vector(0.000001, 0.000001, 0.000001), healthPenalty, DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_BLEEDING);
-    ClientPrint(null, 3, "[AFK] Removed " + healthPenalty + " health from Hale to compensate for idling players.");
+    ClientPrint(null, 3, "Removed " + healthPenalty + " health from Hale to compensate for idling players.");
 }
 
 // Enable the AFK checker.

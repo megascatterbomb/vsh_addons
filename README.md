@@ -12,6 +12,10 @@ New Features:
     - The total damage by all players is displayed.
     - Damage by other sources (e.g. Distillery grinder) is listed separately.
     - Shows a percentage of how much health RED Team managed to chip away.
+- Anti-AFK measures:
+  - If a player fails to send a keyboard input for 60 seconds, they are killed.
+  - When this happens, Hale's health is reduced to compensate, as though the idle player was never there in the first place.
+  - Chat messages are sent to the idle player to give them an opportunity to come back before the idle-death.
 
 Changes:
 - Legend:
