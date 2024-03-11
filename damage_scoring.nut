@@ -1,6 +1,6 @@
 // Broadcast player's damage in chat when they die.
 function BroadcastDamageOnDeath(attacker, victim, deadRinger = false) {
-    if(IsBoss(victim) || IsRoundOver() || IsRoundSetup())
+    if(IsBoss(victim) || IsRoundOver() || IsRoundSetup() || bootedPlayers.find(victim) != null)
     {
         return;
     }

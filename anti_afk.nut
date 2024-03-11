@@ -2,7 +2,7 @@ local mercsIdleTracker = {};
 
 local idleThreshold = 60;
 
-local movementFlags = IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
+::bootedPlayers <- [];
 
 function PrintIdleMessage(player, timeToKick)
 {
@@ -18,10 +18,7 @@ function CheckIfStillIdle(player)
 {
     local buttons = GetPropInt(player, "m_nButtons");
 
-    if(!(
-        (buttons & movementFlags) || // WASD input
-        (false) // Mouse input
-    ))
+    if(buttons == 0) // No input
     {
         return true;
     }
@@ -44,9 +41,9 @@ function IdleTick()
 local adjustedMercCount = -1;
 
 // Reduce hale's health to compensate for the loss in players.
-function AdjustHaleHealth(bootedPlayers)
+function AdjustHaleHealth(booted)
 {
-    local bootCount = bootedPlayers.len();
+    local bootCount = booted.len();
     if(adjustedMercCount < 0) adjustedMercCount = startMercCount;
     local oldMercCount = adjustedMercCount;
     adjustedMercCount = adjustedMercCount - bootCount;
@@ -61,8 +58,7 @@ function AdjustHaleHealth(bootedPlayers)
     local healthDiff = oldMaxHealth - adjustedMaxHealth;
 
     local damageDealtByAFKPlayers = 0;
-
-    foreach(player in bootedPlayers)
+    foreach(player in booted)
     {
         local damage = GetRoundDamage(player);
         damageDealtByAFKPlayers = damageDealtByAFKPlayers + damage;
@@ -73,7 +69,7 @@ function AdjustHaleHealth(bootedPlayers)
     if(healthPenalty <= 0) return;
 
     boss.TakeDamageCustom(boss, boss, null, Vector(0.000001, 0.000001, 0.000001), Vector(0.000001, 0.000001, 0.000001), healthPenalty, DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_BLEEDING);
-    ClientPrint(null, 3, "Hale was penalized " + healthPenalty + " health to compensate for idling.");
+    ClientPrint(null, 3, "[AFK] Removed " + healthPenalty + " health from Hale to compensate for idling players.");
 }
 
 // Enable the AFK checker.
@@ -95,7 +91,7 @@ function IdleStart()
 // Send warning messages; kill if idleThreshold is reached.
 function IdleSecondLoop()
 {
-    local bootedPlayers = [];
+    local booted = [];
     foreach(player in GetAliveMercs())
     {
         if (player == null || !IsPlayerAlive(player) || !(player in mercsIdleTracker)) continue;
@@ -104,6 +100,7 @@ function IdleSecondLoop()
 
         if(timeIdle >= idleThreshold)
         {
+            booted.push(player);
             bootedPlayers.push(player);
             player.TakeDamage(999999, 0, null);
 
@@ -125,7 +122,7 @@ function IdleSecondLoop()
                 PrintIdleMessage(player, 10);
                 break;
             case (idleThreshold - 5):
-                PrintIdleMessageNearDeath(player, 5);
+                PrintIdleMessage(player, 5);
                 break;
             case (idleThreshold - 4):
                 PrintIdleMessageNearDeath(player, 4);
@@ -141,7 +138,7 @@ function IdleSecondLoop()
                 break;
         }
     }
-    AdjustHaleHealth(bootedPlayers);
+    AdjustHaleHealth(booted);
 
     RunWithDelay("IdleSecondLoop()", null, 1);
 }
