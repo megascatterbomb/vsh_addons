@@ -1,8 +1,6 @@
 local mercsIdleTracker = {};
-local mercsInteractTracker = {};
 
 local idleThreshold = 60;
-local interactThreshold = 1000;
 
 local movementFlags = IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT;
 
@@ -27,7 +25,6 @@ function CheckIfStillIdle(player)
     {
         return true;
     }
-    mercsInteractTracker[player]++;
     mercsIdleTracker[player] = Time();
     return false;
 }
@@ -36,7 +33,7 @@ function IdleTick()
 {
     foreach(player in GetAliveMercs())
     {
-        if(!(player in mercsIdleTracker) || !(player in mercsInteractTracker))
+        if(!(player in mercsIdleTracker))
         {
             continue;
         }
@@ -44,19 +41,38 @@ function IdleTick()
     }
 }
 
-function AdjustHaleHealth(bootCount)
+local adjustedMercCount = -1;
+
+function AdjustHaleHealth(bootedPlayers)
 {
-    local newMercCount = startMercCount - bootCount;
+    local bootCount = bootedPlayers.len();
+    if(adjustedMercCount < 0) adjustedMercCount = startMercCount;
+    local oldMercCount = adjustedMercCount;
+    adjustedMercCount = adjustedMercCount - bootCount;
 
-    if(bootCount <= 0 || bootCount >= newMercCount) return;
+    if(bootCount <= 0 || adjustedMercCount <= 0) return;
 
-    local effectiveMaxHealth = GetStartingHealth(newMercCount);
+    local boss = GetBossPlayers()[0];
+    local currHealth = boss.GetHealth();
+    local oldMaxHealth = GetStartingHealth(oldMercCount);
+    local adjustedMaxHealth = GetStartingHealth(adjustedMercCount)
 
-    local healthDiff = maxHealth - effectiveMaxHealth;
+    local healthDiff = oldMaxHealth - adjustedMaxHealth;
 
-    local healthPenalty = floor(clampCeiling(currentHealth - 1,  healthDiff * (currentHealth / maxHealth))) - GetRoundDamage(player);
+    local damageDealtByAFKPlayers = 0;
+
+    foreach(player in bootedPlayers)
+    {
+        local damage = GetRoundDamage(player);
+        damageDealtByAFKPlayers = damageDealtByAFKPlayers + damage;
+    }
+
+    local healthPenalty = floor(clampCeiling(currHealth - 1,  healthDiff * (currHealth / oldMaxHealth))) - damageDealtByAFKPlayers;
 
     if(healthPenalty <= 0) return;
+
+    boss.TakeDamageCustom(boss, boss, null, Vector(0.000001, 0.000001, 0.000001), Vector(0.000001, 0.000001, 0.000001), healthPenalty, DMG_PREVENT_PHYSICS_FORCE, TF_DMG_CUSTOM_BLEEDING);
+    ClientPrint(null, 3, "Hale was penalized " + healthPenalty + " health to compensate for idling.");
 }
 
 function IdleStart()
@@ -64,10 +80,9 @@ function IdleStart()
     local now = Time();
     foreach(player in GetAliveMercs())
     {
-        if(IsPlayerAlive(player) && (!(player in mercsIdleTracker) || !(player in mercsInteractTracker)))
+        if(IsPlayerAlive(player) && !(player in mercsIdleTracker))
         {
             mercsIdleTracker[player] <- now;
-            mercsInteractTracker[player] <- 0;
         }
     }
     IdleSecondLoop();
@@ -79,22 +94,18 @@ function IdleStart()
 
 function IdleSecondLoop()
 {
-    local bootCount = 0;
+    local bootedPlayers = [];
     foreach(player in GetAliveMercs())
     {
-        if(!IsPlayerAlive(player) || mercsInteractTracker[player] >= interactThreshold)
-        {
-            mercsIdleTracker[player] <- -1;
-            mercsInteractTracker.rawdelete(player);
-            continue;
-        }
+        if (player == null || !IsPlayerAlive(player)) continue;
+
         local timeIdle = floor(Time() - mercsIdleTracker[player]);
         if(timeIdle >= idleThreshold && IsPlayerAlive(player))
         {
-            bootCount++;
             player.TakeDamage(999999, 0, null);
             local name = GetPropString(player, "m_szNetname");
             ClientPrint(null, 3, "Player '" + name + "' was fired for being AFK.");
+            bootedPlayers.push(player);
             continue;
         }
         switch (timeIdle) {
@@ -127,7 +138,7 @@ function IdleSecondLoop()
                 break;
         }
     }
-    AdjustHaleHealth(bootCount);
+    AdjustHaleHealth(bootedPlayers);
 
     RunWithDelay("IdleSecondLoop()", null, 1);
 }
