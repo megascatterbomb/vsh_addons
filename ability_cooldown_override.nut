@@ -1,6 +1,6 @@
-local newMightySlamCooldown = 1;
-local newSaxtonPunchCooldown = 0.5;
-local newSweepingChargeCooldown = 1;
+local newMightySlamCooldown = 5;
+local newSaxtonPunchCooldown = 5;
+local newSweepingChargeCooldown = 5;
 
 // Contains replacement functions for each of saxton's abilities.
 // Needed to modify the ability cooldown at runtime.

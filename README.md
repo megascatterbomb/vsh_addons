@@ -43,7 +43,7 @@ Changes:
 - Control Point:
   - Capturing the point no longer instantly ends the round:
     - If RED caps, they get guaranteed crits on all weapons and a powerful 5 second health regen.
-    - If Hale caps, the cooldown on his special abilities is removed.
+    - If Hale caps, the cooldown on all of his special abilities is reduced to 5 seconds.
   - On capture, the stalemate timer is disabled entirely and the point locks itself permanently.
   - The round will eventually end due to Hale's health changing over time:
     - When RED caps, Hale's health will tick down faster and faster. This guarantees his death if he doesn't manage to kill all of RED team first.
