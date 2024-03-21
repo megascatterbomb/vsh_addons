@@ -17,6 +17,13 @@ function BraveJumpTrait::OnFrameTickAlive()
 
     if (buttons & IN_JUMP && jumpStatus == BOSS_JUMP_STATUS.CAN_DOUBLE_JUMP)
     {
+        if(Time() < lastTimeJumped + jumpCooldown)
+        {
+            return;
+        }
+
+        lastTimeJumped = Time();
+        jumped = true;
         if (!IsRoundSetup() && Time() - voiceLinePlayed > 1.5)
         {
             voiceLinePlayed = Time();
@@ -37,14 +44,6 @@ local cooldown_text_tf;
 
 function BraveJumpTrait::Perform()
 {
-    if(Time() < lastTimeJumped + jumpCooldown)
-    {
-        return;
-    }
-
-    lastTimeJumped = Time();
-    jumped = true;
-
     local buttons = GetPropInt(boss, "m_nButtons");
     local eyeAngles = boss.EyeAngles();
     local forward = eyeAngles.Forward();
