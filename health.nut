@@ -3,7 +3,6 @@
 {
     if (mercCount < 2)
     {
-        maxHealth = 1000;
         return 1000;
     }
     local factor = clampCeiling(1, 1.0 - ((mercCount - 32.0) / 200.0));
