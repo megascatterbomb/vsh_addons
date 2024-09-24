@@ -56,17 +56,12 @@ function BroadcastBestPlayers()
     }
     local otherDamage = totalDamage - playerDamage;
     local otherPercent = floor(100 * otherDamage / maxHealth);
-    local healedPercent = floor(100 * healthHealed / maxHealth);
     local totalPercent = floor(100 * totalDamage / maxHealth);
-    local netPercent = floor(100 * netDamage / maxHealth);
 
     if(otherDamage > 0) ClientPrint(null, 3, "Player Damage: "+playerDamage+" ("+playerPercent+"%)");
     if(otherDamage > 0) ClientPrint(null, 3, "Other Damage: "+otherDamage+" ("+otherPercent+"%)");
 
     ClientPrint(null, 3, "Total Damage: "+totalDamage+"/"+maxHealth+" ("+totalPercent+"%)");
-
-    if(healthHealed > 0) ClientPrint(null, 3, "Health Regenerated: "+healthHealed+" ("+healedPercent+"%)");
-    if(healthHealed > 0) ClientPrint(null, 3, "Net Damage: "+netDamage+" ("+netPercent+"%)");
 }
 
 AddListener("death", 0, function(attacker, victim, params)

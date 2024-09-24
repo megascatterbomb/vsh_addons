@@ -12,7 +12,7 @@ local spawnPoint;
 }
 
 // Create portal effect around control point.
-function HaleBeginEndGame() {
+function HaleBeginEndgame() {
     local controlPoint = Entities.FindByClassname(null, "team_control_point");
     spawnPoint = controlPoint.GetOrigin() + Vector(0, 0, 16);
 
@@ -20,21 +20,22 @@ function HaleBeginEndGame() {
 }
 
 // Respawn all fallen mercenaries to work for Hale.
+// TODO: On death after cap, move merc to BLU team.
 function HaleSpawnComrades() {
-    foreach (player in GetValidMercs()) {
-        if (!IsAlive(player) || !(player in potentialTraitors)) continue;
+    foreach (traitor in GetValidMercs()) {
+        if (IsPlayerAlive(traitor)) continue;
 
-        player.SwitchTeam(TF_TEAM_BOSS);
-        player.ForceRegenerateAndRespawn();
-        player.SetOrigin(spawnPoint);
-        player.AddCond(TF_COND_INVULNERABLE_USER_BUFF, 3);
+        traitor.SwitchTeam(TF_TEAM_BOSS);
+        traitor.ForceRegenerateAndRespawn();
+        traitor.SetAbsOrigin(spawnPoint);
+        traitor.AddCondEx(TF_COND_INVULNERABLE_USER_BUFF, 3.0, traitor);
     }
 }
 
 // Only mercs present at the end of setup time may join the fight.
 AddListener("setup_end", 11, function()
 {
-    foreach(player in GetValidMercs()) {
+    foreach(merc in GetValidMercs()) {
         potentialTraitors.push(merc);
     }
 });
