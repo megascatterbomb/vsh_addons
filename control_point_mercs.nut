@@ -6,7 +6,8 @@ local idleTime = 30;
 
 // Mercs get 5s of massive regen and full crits on all weapons for the rest of the round.
 // Hale bleeds an ever-increasing amount until the round ends.
-::BuffMercs <- function() {
+::BuffMercs <- function()
+{
     ::mercBuff <- true;
     ClientPrint(null, 3, "Hale is bleeding to death, and the Mercs now have permanent crits!");
     // Give huge health buff
@@ -20,8 +21,8 @@ local idleTime = 30;
 }
 
 // Starts the endgame bleed.
-function MercBeginEndgame() {
-
+function MercBeginEndgame()
+{
     EntFireByHandle(team_round_timer, "Pause", "", 0, null, null);
     EntFireByHandle(team_round_timer, "Disable", "", 0, null, null);
 
@@ -77,7 +78,8 @@ characterTraitsClasses.push(class extends CharacterTrait
 {
     function OnTickAlive(timeDelta)
     {
-        if(mercBuff){
+        if(mercBuff)
+        {
             player.AddCondEx(TF_COND_OFFENSEBUFF, 0.2, player);
             player.AddCondEx(TF_COND_CRITBOOSTED_ON_KILL, 0.2, player);
         }

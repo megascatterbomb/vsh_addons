@@ -1,6 +1,6 @@
 // Broadcast player's damage in chat when they die.
 function BroadcastDamageOnDeath(attacker, victim, deadRinger = false) {
-    if(IsBoss(victim) || IsRoundOver() || IsRoundSetup() || bootedPlayers.find(victim) != null)
+    if (IsBoss(victim) || IsRoundOver() || IsRoundSetup() || bootedPlayers.find(victim) != null || victim.GetTeam() == TF_TEAM_BOSS)
     {
         return;
     }
@@ -47,12 +47,12 @@ function BroadcastBestPlayers()
         }
     }
     local netDamage = maxHealth - currentHealth;
-    local totalDamage = netDamage + healthHealed;
+    local totalDamage = netDamage;
 
     local playerPercent = floor(100 * playerDamage / maxHealth);
     if(!IsAnyBossAlive())
     {
-        totalDamage = maxHealth + healthHealed;
+        totalDamage = maxHealth;
     }
     local otherDamage = totalDamage - playerDamage;
     local otherPercent = floor(100 * otherDamage / maxHealth);
